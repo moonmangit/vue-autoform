@@ -24,10 +24,11 @@
     "type-check": "vue-tsc --noEmit --project tsconfig.lib.json",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "prepublishOnly": "pnpm lint && pnpm type-check && pnpm build",
+    "pre:publish": "pnpm lint && pnpm type-check && pnpm build",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "main:release": "git push origin main && git push origin v$(node -p \"require('./package.json').version\")"
   },
   "peerDependencies": {
     "vue": "^3.3.0",
