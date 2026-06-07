@@ -146,6 +146,52 @@
           </details>
         </template>
       </section>
+
+      <!-- Demo 6: Async options + array-of-object value -->
+      <section class="demo-card">
+        <h2>Demo 6 — Async options &amp; array-of-object values</h2>
+        <p class="demo-desc">
+          <code>props</code> as a getter function — reactive async values
+          (loading state, fetched options) stay live without rebuilding
+          <code>fields</code>. The <code>tags</code> field stores an array of
+          objects.
+        </p>
+
+        <div
+          style="
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+          "
+        >
+          <button
+            class="btn"
+            :disabled="asyncLoading"
+            @click="fetchAsyncOptions"
+          >
+            {{ asyncLoading ? "Fetching…" : "Simulate Fetch Options" }}
+          </button>
+          <span v-if="asyncLoading" style="font-size: 0.8125rem; color: #6b7280">Loading options from server…</span>
+          <span
+            v-else-if="asyncOptions.length"
+            style="font-size: 0.8125rem; color: #16a34a"
+          >✓ {{ asyncOptions.length }} options loaded</span>
+        </div>
+
+        <AutoForm
+          v-model="asyncFormData"
+          :schema="asyncSchema"
+          :fields="asyncFields"
+          :layout="{ default: 1, md: 2 }"
+          validate-on="blur"
+        />
+
+        <div class="output">
+          <strong>Model (note tags is array of objects):</strong>
+          <pre>{{ JSON.stringify(asyncFormData, null, 2) }}</pre>
+        </div>
+      </section>
     </main>
   </div>
 </template>
@@ -160,6 +206,7 @@ import SelectInput from "./components/SelectInput.vue";
 import TextareaInput from "./components/TextareaInput.vue";
 import CheckboxInput from "./components/CheckboxInput.vue";
 import NumberInput from "./components/NumberInput.vue";
+import MultiSelectInput from "./components/MultiSelectInput.vue";
 
 const schema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -256,6 +303,65 @@ function handleSubmit() {
     submitResult.value = submitForm.value.validateAll();
   }
 }
+
+// ── Demo 6: Async options + array-of-object field ────────────────────────────
+
+const asyncLoading = ref(false);
+const asyncOptions = ref<{ value: string; label: string }[]>([]);
+
+function fetchAsyncOptions() {
+  asyncLoading.value = true;
+  asyncOptions.value = [];
+  setTimeout(() => {
+    asyncOptions.value = [
+      { value: "vue", label: "Vue.js" },
+      { value: "react", label: "React" },
+      { value: "svelte", label: "Svelte" },
+      { value: "angular", label: "Angular" },
+    ];
+    asyncLoading.value = false;
+  }, 1500);
+}
+
+const asyncSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  framework: z.string().min(1, "Please select a framework"),
+  tags: z
+    .array(z.object({ value: z.string(), label: z.string() }))
+    .min(1, "Select at least one tag"),
+});
+
+const asyncFormData = ref<Record<string, unknown>>({
+  name: "",
+  framework: "",
+  tags: [],
+});
+
+const asyncFields = {
+  name: {
+    component: TextInput,
+    props: { label: "Your Name", placeholder: "Jane Doe" },
+  },
+  framework: {
+    component: SelectInput,
+    // props as getter function — reads asyncOptions and asyncLoading reactively
+    props: () => ({
+      label: "Preferred Framework",
+      placeholder: asyncLoading.value ? "Loading…" : "Select a framework",
+      disabled: asyncLoading.value,
+      options: asyncOptions.value,
+    }),
+  },
+  tags: {
+    component: MultiSelectInput,
+    // getter — reads asyncOptions and asyncLoading reactively
+    props: () => ({
+      label: "Tags (multi-select → emits array of objects)",
+      disabled: asyncLoading.value,
+      options: asyncOptions.value,
+    }),
+  },
+};
 
 // ── Demo 5: Complex Job Application ──────────────────────────────────────────
 

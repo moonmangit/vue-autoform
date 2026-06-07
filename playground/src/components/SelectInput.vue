@@ -3,12 +3,18 @@
     <label v-if="label" class="field-label">{{ label }}</label>
     <select
       class="field-input"
-      :class="{ 'field-input--error': !!error }"
+      :class="{
+        'field-input--error': !!error,
+        'field-input--disabled': disabled,
+      }"
       :value="modelValue"
-      @change="emit('update:modelValue', ($event.target as HTMLSelectElement).value)"
+      :disabled="disabled"
+      @change="
+        emit('update:modelValue', ($event.target as HTMLSelectElement).value)
+      "
       @blur="emit('blur')"
     >
-      <option value="" disabled>{{ placeholder ?? 'Select...' }}</option>
+      <option value="" disabled>{{ placeholder ?? "Select..." }}</option>
       <option v-for="opt in options" :key="opt.value" :value="opt.value">
         {{ opt.label }}
       </option>
@@ -20,21 +26,22 @@
 <script setup lang="ts">
 withDefaults(
   defineProps<{
-    modelValue?: string
-    error?: string
-    label?: string
-    placeholder?: string
-    options: { value: string; label: string }[]
+    modelValue?: string;
+    error?: string;
+    label?: string;
+    placeholder?: string;
+    disabled?: boolean;
+    options: { value: string; label: string }[];
   }>(),
   {
-    modelValue: '',
+    modelValue: "",
   },
-)
+);
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: string): void
-  (e: 'blur'): void
-}>()
+  (e: "update:modelValue", value: string): void;
+  (e: "blur"): void;
+}>();
 </script>
 
 <style scoped>
@@ -70,6 +77,12 @@ const emit = defineEmits<{
 
 .field-input--error {
   border-color: #ef4444;
+}
+
+.field-input--disabled {
+  background: #f9fafb;
+  color: #9ca3af;
+  cursor: not-allowed;
 }
 
 .field-error {

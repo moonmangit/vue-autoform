@@ -1,5 +1,4 @@
 import type { Component } from 'vue'
-import type { ZodObject, ZodRawShape } from 'zod'
 
 export type BreakpointKey = 'sm' | 'md' | 'lg' | 'xl' | '2xl'
 
@@ -15,8 +14,7 @@ export const DEFAULT_BREAKPOINTS: BreakpointMap = {
 
 export interface FieldConfig {
   component: Component
-  props?: Record<string, unknown>
-  [key: string]: unknown
+  props?: Record<string, unknown> | (() => Record<string, unknown>)
 }
 
 export type LayoutRow = string[]
@@ -35,15 +33,6 @@ export function isShorthandLayout(layout: AutoFormLayout): layout is ShorthandLa
 
 export function isExplicitLayout(layout: AutoFormLayout): layout is ExplicitLayout {
   return Array.isArray(layout.default)
-}
-
-export interface AutoFormProps {
-  schema: ZodObject<ZodRawShape>
-  layout?: AutoFormLayout
-  fields: Record<string, FieldConfig>
-  modelValue: Record<string, unknown>
-  validateOn?: 'blur' | 'input' | 'submit'
-  breakpoints?: Partial<BreakpointMap>
 }
 
 export interface FieldRenderInfo {

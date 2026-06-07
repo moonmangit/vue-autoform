@@ -4,58 +4,20 @@
       mediaQueryCss
     }}</component>
 
-    <!-- Shorthand layout: single flat grid, CSS handles column count per breakpoint -->
-    <div v-if="isShorthand" class="autoform-flat-grid">
-      <div v-for="fieldKey in flatKeys" :key="fieldKey" class="autoform-cell">
-        <template v-if="fields[fieldKey]">
-          <component
-            :is="fields[fieldKey].component"
-            :modelValue="modelValue[fieldKey]"
-            :error="errors[fieldKey]"
-            v-bind="fields[fieldKey].props ?? {}"
-            @update:modelValue="(val: unknown) => onFieldInput(fieldKey, val)"
-            @blur="() => onFieldBlur(fieldKey)"
-          />
-          <slot name="error" :fieldKey="fieldKey" :error="errors[fieldKey]" />
-        </template>
-        <template v-else>
-          <slot
-            :name="`field-${fieldKey}`"
-            :fieldKey="fieldKey"
-            :value="modelValue[fieldKey]"
-            :error="errors[fieldKey]"
-            :onUpdate="(val: unknown) => onFieldInput(fieldKey, val)"
-            :onBlur="() => onFieldBlur(fieldKey)"
-          >
-            <input
-              class="autoform-default-input"
-              :value="String(modelValue[fieldKey] ?? '')"
-              @input="
-                (e: Event) =>
-                  onFieldInput(fieldKey, (e.target as HTMLInputElement).value)
-              "
-              @blur="() => onFieldBlur(fieldKey)"
-            />
-          </slot>
-          <slot name="error" :fieldKey="fieldKey" :error="errors[fieldKey]" />
-        </template>
-      </div>
-    </div>
-
-    <!-- Explicit layout / no layout: flat grid, CSS positions each field per breakpoint -->
-    <div v-else class="autoform-flat-grid">
+    <!-- Flat grid: CSS handles column count (shorthand) or per-field position (explicit/none) -->
+    <div class="autoform-flat-grid">
       <div
-        v-for="fieldKey in flatKeys"
+        v-for="fieldKey in schemaKeys"
         :key="fieldKey"
         class="autoform-cell"
-        :data-field-key="fieldKey"
+        :data-field-key="isExplicit ? fieldKey : undefined"
       >
         <template v-if="fields[fieldKey]">
           <component
             :is="fields[fieldKey].component"
             :modelValue="modelValue[fieldKey]"
             :error="errors[fieldKey]"
-            v-bind="fields[fieldKey].props ?? {}"
+            v-bind="resolveProps(fieldKey)"
             @update:modelValue="(val: unknown) => onFieldInput(fieldKey, val)"
             @blur="() => onFieldBlur(fieldKey)"
           />
@@ -127,17 +89,20 @@ const { errors, schemaKeys, onFieldInput, onFieldBlur, validateAll } =
   useAutoForm(
     props.schema,
     toRef(props, "modelValue"),
-    (_, val) => emit("update:modelValue", val),
+    (event, val) => emit(event, val),
     toRef(props, "validateOn"),
-    toRef(props, "layout"),
-    toRef(props, "breakpoints"),
   );
 
-const isShorthand = computed(() =>
-  props.layout ? isShorthandLayout(props.layout) : false,
+const isExplicit = computed(() =>
+  props.layout ? isExplicitLayout(props.layout) : true,
 );
 
-const flatKeys = computed(() => schemaKeys.value);
+function resolveProps(fieldKey: string): Record<string, unknown> {
+  const cfg = props.fields[fieldKey];
+  if (!cfg) return {};
+  const p = cfg.props;
+  return typeof p === "function" ? p() : (p ?? {});
+}
 
 const mediaQueryCss = computed<string>(() => {
   if (!props.layout) return "";
@@ -246,15 +211,13 @@ defineExpose({ validateAll, errors });
 <style>
 .autoform {
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: var(--autoform-row-gap, 1rem);
 }
 
 .autoform-flat-grid {
   display: grid;
   grid-template-columns: repeat(1, minmax(0, 1fr));
-  gap: var(--autoform-gap, 1rem);
+  column-gap: var(--autoform-gap, 1rem);
+  row-gap: var(--autoform-row-gap, 1rem);
   width: 100%;
 }
 
