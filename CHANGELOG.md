@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.1.15
+
+[compare changes](https://github.com/moonmangit/vue-autoform/compare/v0.1.13...v0.1.15)
+
+### 🏡 Chore
+
+- **release:** V0.1.14 ([4a28607](https://github.com/moonmangit/vue-autoform/commit/4a28607))
+
+### ❤️ Contributors
+
+- Game <seagame.std@gmail.com>
+
 ## v0.1.14
 
 [compare changes](https://github.com/moonmangit/vue-autoform/compare/v0.1.13...v0.1.14)
