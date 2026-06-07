@@ -1,6 +1,26 @@
 # Changelog
 
 
+## v0.1.10
+
+[compare changes](https://github.com/moonmangit/vue-autoform/compare/v0.1.9...v0.1.10)
+
+### 🚀 Enhancements
+
+- Update docs ([7d5377d](https://github.com/moonmangit/vue-autoform/commit/7d5377d))
+
+### 💅 Refactors
+
+- Rename prepublishOnly script and add main:release script ([33f271d](https://github.com/moonmangit/vue-autoform/commit/33f271d))
+
+### 🏡 Chore
+
+- Add docs directory to eslint ignore patterns ([0a95f16](https://github.com/moonmangit/vue-autoform/commit/0a95f16))
+
+### ❤️ Contributors
+
+- Game <seagame.std@gmail.com>
+
 ## v0.1.9
 
 [compare changes](https://github.com/moonmangit/vue-autoform/compare/v0.1.8...v0.1.9)
