@@ -23,6 +23,16 @@ export default tseslint.config(
         sourceType: 'module',
         extraFileExtensions: ['.vue'],
       },
+      globals: {
+        window: 'readonly',
+        document: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        console: 'readonly',
+        fetch: 'readonly',
+      },
     },
     rules: {
       // Vue — logic rules
