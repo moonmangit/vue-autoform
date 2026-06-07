@@ -60,8 +60,8 @@ export default tseslint.config(
     },
   },
 
-  // Ignore build output and config files
+  // Ignore build output, config files, and docs
   {
-    ignores: ['dist/**', 'node_modules/**', '*.config.ts', '*.config.js'],
+    ignores: ['dist/**', 'node_modules/**', '*.config.ts', '*.config.js', 'docs/**'],
   },
 )

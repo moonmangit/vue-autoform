@@ -24,7 +24,11 @@
     "type-check": "vue-tsc --noEmit --project tsconfig.lib.json",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "prepublishOnly": "pnpm lint && pnpm type-check && pnpm build"
+    "pre:publish": "pnpm lint && pnpm type-check && pnpm build",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "main:release": "git push origin main && git push origin v$(node -p \"require('./package.json').version\")"
   },
   "peerDependencies": {
     "vue": "^3.3.0",
@@ -42,6 +46,7 @@
     "typescript-eslint": "^8.60.1",
     "vite": "^5.0.0",
     "vite-plugin-dts": "^3.7.0",
+    "vitepress": "^1.0.0",
     "vue": "^3.4.0",
     "vue-eslint-parser": "^10.4.1",
     "vue-tsc": "^2.0.0",
