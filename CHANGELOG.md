@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.1.13
+
+[compare changes](https://github.com/moonmangit/vue-autoform/compare/v0.1.11...v0.1.13)
+
+### 📖 Documentation
+
+- Update styling documentation and remove manual CSS import requirement ([fc76242](https://github.com/moonmangit/vue-autoform/commit/fc76242))
+
+### 🏡 Chore
+
+- **release:** V0.1.12 ([2b36399](https://github.com/moonmangit/vue-autoform/commit/2b36399))
+
+### ❤️ Contributors
+
+- Game <seagame.std@gmail.com>
+
 ## v0.1.11
 
 [compare changes](https://github.com/moonmangit/vue-autoform/compare/v0.1.10...v0.1.11)
