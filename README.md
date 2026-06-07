@@ -68,7 +68,6 @@ yarn add @moonmangit/vue-autoform zod@^3
 import { ref } from "vue";
 import { z } from "zod";
 import { AutoForm } from "@moonmangit/vue-autoform";
-import "@moonmangit/vue-autoform/dist/style.css";
 import TextInput from "./components/TextInput.vue";
 
 const schema = z.object({
@@ -391,6 +390,32 @@ Control spacing without touching component internals:
   --autoform-row-gap: 1rem; /* row gap between field rows */
 }
 ```
+
+---
+
+## Styling
+
+The library auto-injects base styles (CSS Grid layout, default input styling) when you import the component. No manual CSS import is required.
+
+### Customizing Styles
+
+You have two options:
+
+**1. Override with CSS variables** (recommended)
+```css
+.autoform {
+  --autoform-gap: 1.5rem;
+  --autoform-row-gap: 1.5rem;
+}
+```
+
+**2. Completely custom styling**
+If you want full control over the form's appearance, you can:
+- Write your own field components with custom styles
+- Override the auto-injected styles with higher specificity
+- Use CSS modules or scoped styles in your field components
+
+The library is headless — it only provides the layout grid structure. All field styling is up to you.
 
 ---
 
