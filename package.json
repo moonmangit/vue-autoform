@@ -1,6 +1,6 @@
 {
   "name": "@moonmangit/vue-autoform",
-  "version": "0.1.5",
+  "version": "0.1.7",
   "description": "Headless Vue 3 auto-rendering form library with Zod schema validation and responsive grid layout",
   "type": "module",
   "main": "./dist/vue-autoform.cjs.js",
