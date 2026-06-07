@@ -1,0 +1,87 @@
+:root {
+  --vp-c-brand: #6366f1;
+  --vp-c-brand-light: #818cf8;
+  --vp-c-brand-lighter: #a5b4fc;
+  --vp-c-brand-dark: #4f46e5;
+  --vp-c-brand-darker: #4338ca;
+  --vp-c-brand-gradient: linear-gradient(
+    135deg,
+    #6366f1 0%,
+    #8b5cf6 50%,
+    #d946ef 100%
+  );
+}
+
+/* Gradient text for headings */
+.VPDoc h1,
+.VPDoc h2,
+.VPHomeHero h1 {
+  background: var(--vp-c-brand-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Hero title gradient */
+.VPHomeHero .title {
+  background: var(--vp-c-brand-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Feature cards hover effect */
+.VPFeature {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.VPFeature::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--vp-c-brand-gradient);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.VPFeature:hover {
+  transform: translateY(-8px) scale(1.05);
+  box-shadow: 0 20px 40px rgba(99, 102, 241, 0.2);
+}
+
+.VPFeature:hover::before {
+  opacity: 0.05;
+}
+
+.VPFeature .icon {
+  transition: transform 0.3s ease;
+}
+
+.VPFeature:hover .icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

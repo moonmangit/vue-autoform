@@ -39,6 +39,10 @@ Thumbs.db
 # Vite cache
 .vite/
 
+# VitePress
+docs/.vitepress/dist/
+docs/.vitepress/cache/
+
 # pnpm
 .pnpm-store/
 
