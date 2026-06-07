@@ -1,0 +1,58 @@
+{
+  "name": "vue-autoform",
+  "version": "0.1.0",
+  "description": "Headless Vue 3 auto-rendering form library with Zod schema validation and responsive grid layout",
+  "type": "module",
+  "main": "./dist/vue-autoform.cjs.js",
+  "module": "./dist/vue-autoform.es.js",
+  "types": "./dist/vue-autoform.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/vue-autoform.es.js",
+      "require": "./dist/vue-autoform.cjs.js",
+      "types": "./dist/vue-autoform.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "playground": "vite --config playground/vite.config.ts",
+    "type-check": "vue-tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "prepublishOnly": "pnpm lint && pnpm type-check && pnpm build"
+  },
+  "peerDependencies": {
+    "vue": "^3.3.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^25.9.2",
+    "@vitejs/plugin-vue": "^5.0.0",
+    "eslint": "^10.4.1",
+    "eslint-plugin-vue": "^10.9.2",
+    "jiti": "^2.7.0",
+    "typescript": "^5.3.0",
+    "typescript-eslint": "^8.60.1",
+    "vite": "^5.0.0",
+    "vite-plugin-dts": "^3.7.0",
+    "vue": "^3.4.0",
+    "vue-eslint-parser": "^10.4.1",
+    "vue-tsc": "^2.0.0",
+    "zod": "^3.22.0"
+  },
+  "keywords": [
+    "vue",
+    "vue3",
+    "form",
+    "autoform",
+    "zod",
+    "schema",
+    "headless"
+  ],
+  "license": "MIT"
+}
