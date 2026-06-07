@@ -1,218 +1,346 @@
-# vue-autoform
+# @moonmangit/vue-autoform
 
-Headless Vue 3 auto-rendering form library with Zod schema validation, responsive CSS grid layout, and fully customisable field components.
+[![npm version](https://img.shields.io/npm/v/@moonmangit/vue-autoform)](https://www.npmjs.com/package/@moonmangit/vue-autoform)
+[![license](https://img.shields.io/npm/l/@moonmangit/vue-autoform)](./LICENSE)
+[![Vue 3](https://img.shields.io/badge/vue-3.x-42b883)](https://vuejs.org)
+[![Zod](https://img.shields.io/badge/zod-3.x-3068B7)](https://zod.dev)
+
+**Headless** Vue 3 form library that auto-renders fields from a Zod schema with responsive CSS grid layout and fully customisable field components. You own the UI — the library owns the wiring.
+
+---
+
+## Table of Contents
+
+- [Features](#features)
+- [Install](#install)
+- [Quick Start](#quick-start)
+- [Field Components](#field-components)
+- [Layout](#layout)
+  - [No Layout](#no-layout-single-column)
+  - [Shorthand Layout](#shorthand-layout)
+  - [Explicit Layout](#explicit-layout)
+- [Validation](#validation)
+- [Submit Handling](#submit-handling)
+- [Custom Error Rendering](#custom-error-rendering)
+- [Custom Breakpoints](#custom-breakpoints)
+- [CSS Variables](#css-variables)
+- [Props Reference](#props-reference)
+- [Development](#development)
+
+---
 
 ## Features
 
-- **Schema-driven** — define fields with Zod; validation is automatic
-- **Headless** — bring your own UI components; no styles imposed
-- **Responsive grid** — shorthand col-counts or explicit per-breakpoint layouts, CSS-only
-- **Flexible validation** — run on `blur`, `input`, or `submit`
-- **Full TypeScript support**
+|                            |                                                                                          |
+| -------------------------- | ---------------------------------------------------------------------------------------- |
+| 🧩 **Schema-driven**       | Define fields once in Zod — validation rules, types, and error messages come free        |
+| 🎨 **Headless**            | No styles imposed. Bring your own components, any UI library                             |
+| 📐 **Responsive grid**     | Shorthand (`{ default: 1, md: 2, lg: 3 }`) or explicit per-breakpoint row/column layouts |
+| ✅ **Flexible validation** | Per-field on `blur`, live on `input`, or all-at-once on `submit`                         |
+| 🔑 **Submit control**      | Expose `validateAll()` via template ref for full submit-flow control                     |
+| 🪝 **Error slot**          | Override error rendering globally or per-field via scoped slots                          |
+| 🔷 **TypeScript-first**    | Full type inference on schema keys, field configs, and layout                            |
+
+---
 
 ## Install
 
 ```bash
-pnpm add vue-autoform zod
-# or
-npm install vue-autoform zod
+# pnpm
+pnpm add @moonmangit/vue-autoform zod@^3
+
+# npm
+npm install @moonmangit/vue-autoform zod@^3
+
+# yarn
+yarn add @moonmangit/vue-autoform zod@^3
 ```
 
-> `vue` and `zod` are peer dependencies and must be installed in your project.
+> **Note:** `vue` and `zod` are peer dependencies — install them in your own project.  
+> zod v4 is not yet supported; pin to `zod@^3`.
 
 ---
 
-## Basic Usage
+## Quick Start
 
 ```vue
+<script setup lang="ts">
+import { ref } from "vue";
+import { z } from "zod";
+import { AutoForm } from "@moonmangit/vue-autoform";
+import "@moonmangit/vue-autoform/dist/style.css";
+import TextInput from "./components/TextInput.vue";
+
+const schema = z.object({
+  email: z.string().email("Invalid email"),
+  password: z.string().min(8, "At least 8 characters"),
+});
+
+const fields = {
+  email: { component: TextInput, props: { label: "Email", type: "email" } },
+  password: {
+    component: TextInput,
+    props: { label: "Password", type: "password" },
+  },
+};
+
+const formData = ref({ email: "", password: "" });
+</script>
+
 <template>
   <AutoForm
+    v-model="formData"
     :schema="schema"
     :fields="fields"
-    v-model="formData"
     validate-on="blur"
   />
 </template>
-
-<script setup lang="ts">
-import { reactive } from 'vue'
-import { z } from 'zod'
-import { AutoForm } from 'vue-autoform'
-import MyTextInput from './MyTextInput.vue'
-
-const schema = z.object({
-  email: z.string().email('Invalid email'),
-  password: z.string().min(8, 'Min 8 characters'),
-})
-
-const fields = {
-  email: {
-    component: MyTextInput,
-    props: { label: 'Email', type: 'email' },
-  },
-  password: {
-    component: MyTextInput,
-    props: { label: 'Password', type: 'password' },
-  },
-}
-
-const formData = reactive({ email: '', password: '' })
-</script>
 ```
 
 ---
 
-## Field Component Contract
+## Field Components
 
-Your custom field components receive these props automatically:
+`AutoForm` is **headless** — you provide the components that render each field. Every field component receives these props automatically:
 
-| Prop | Type | Description |
-|---|---|---|
-| `modelValue` | `unknown` | Current field value |
-| `error` | `string \| undefined` | Zod validation error message |
-| `...props` | — | Any extra props from `FieldConfig.props` |
+| Prop         | Type                  | Description                                   |
+| ------------ | --------------------- | --------------------------------------------- |
+| `modelValue` | `unknown`             | Current field value (bind with `:value`)      |
+| `error`      | `string \| undefined` | Zod error message for this field              |
+| `...props`   | —                     | Any extra props from your `FieldConfig.props` |
 
-They should emit `update:modelValue` for v-model binding and `blur` for blur-based validation.
+It must emit:
+
+- `update:modelValue` — on value change
+- `blur` — when the field loses focus (for blur validation)
+
+### Minimal example
 
 ```vue
-<!-- Example field component -->
+<!-- components/TextInput.vue -->
+<script setup lang="ts">
+defineProps<{
+  modelValue?: string;
+  error?: string;
+  label?: string;
+  type?: string;
+}>();
+defineEmits<{ (e: "update:modelValue", v: string): void; (e: "blur"): void }>();
+</script>
+
 <template>
   <div>
-    <input :value="modelValue" @input="emit('update:modelValue', $event.target.value)" @blur="emit('blur')" />
-    <span v-if="error">{{ error }}</span>
+    <label>{{ label }}</label>
+    <input
+      :type="type ?? 'text'"
+      :value="modelValue"
+      @input="
+        $emit('update:modelValue', ($event.target as HTMLInputElement).value)
+      "
+      @blur="$emit('blur')"
+      :class="{ 'is-error': error }"
+    />
+    <span v-if="error" class="error-msg">{{ error }}</span>
   </div>
 </template>
-<script setup lang="ts">
-defineProps<{ modelValue?: string; error?: string; label?: string }>()
-const emit = defineEmits(['update:modelValue', 'blur'])
-</script>
+```
+
+### FieldConfig shape
+
+```ts
+type FieldConfig = {
+  component: Component; // your Vue component
+  props?: Record<string, unknown>; // extra props passed through
+};
 ```
 
 ---
 
 ## Layout
 
-`layout` is optional. Omitting it renders all fields in a single column in schema-key order.
+The `layout` prop is **optional**. Without it, fields render in schema-key order in a single column.
 
-### Shorthand — column count per breakpoint
+### No Layout (single column)
+
+```vue
+<AutoForm v-model="formData" :schema="schema" :fields="fields" />
+```
+
+### Shorthand Layout
+
+Pass column counts per breakpoint. Fields auto-flow left-to-right, top-to-bottom.
 
 ```ts
 const layout = {
-  default: 1,   // 1 column on mobile
-  md: 2,        // 2 columns at ≥768px
-  lg: 3,        // 3 columns at ≥1024px
-}
+  default: 1, // mobile: 1 column
+  md: 2, // ≥ 768px: 2 columns
+  lg: 3, // ≥ 1024px: 3 columns
+};
 ```
-
-Fields auto-flow into columns following schema-key order.
-
-### Explicit — full grid per breakpoint
-
-```ts
-const layout = {
-  default: [
-    ['firstName'],
-    ['lastName'],
-    ['email'],
-  ],
-  md: [
-    ['firstName', 'lastName'],
-    ['email'],
-  ],
-}
-```
-
-Each inner array is a row; each string is a field key matching the Zod schema.
-
----
-
-## Breakpoints
-
-Default breakpoints (Tailwind-compatible):
-
-| Key | Min-width |
-|---|---|
-| `sm` | 640px |
-| `md` | 768px |
-| `lg` | 1024px |
-| `xl` | 1280px |
-| `2xl` | 1536px |
-
-Override per form with the `breakpoints` prop:
 
 ```vue
 <AutoForm
-  :schema="schema"
-  :layout="{ default: 1, tablet: 2 }"
-  :breakpoints="{ tablet: 900 }"
-  :fields="fields"
   v-model="formData"
+  :schema="schema"
+  :fields="fields"
+  :layout="layout"
 />
 ```
+
+### Explicit Layout
+
+Control exactly which fields appear in each row at each breakpoint. Each inner array is a row; each string is a schema key.
+
+```ts
+const layout = {
+  // Mobile: one field per row
+  default: [["firstName"], ["lastName"], ["email"], ["role"]],
+  // Tablet: 2-col rows
+  md: [
+    ["firstName", "lastName"],
+    ["email", "role"],
+  ],
+  // Desktop: everything in one row
+  lg: [["firstName", "lastName", "email", "role"]],
+};
+```
+
+> Fields not listed in a breakpoint layout are **hidden** at that breakpoint. Use this to progressively reveal complexity.
 
 ---
 
 ## Validation
 
+Three modes, set once per form via `validate-on`:
+
 ```vue
-<!-- Validate on blur (default) -->
+<!-- Per-field on focus-out (default) -->
 <AutoForm validate-on="blur" ... />
 
-<!-- Validate on every keystroke -->
+<!-- Live — re-validates on every keystroke -->
 <AutoForm validate-on="input" ... />
 
-<!-- Validate only on submit -->
-<AutoForm ref="form" validate-on="submit" ... />
-```
-
-For `submit` mode, call `validateAll()` via template ref:
-
-```ts
-const form = ref()
-function handleSubmit() {
-  const valid = form.value.validateAll() // returns true/false
-}
+<!-- Deferred — errors only shown after submit -->
+<AutoForm validate-on="submit" ... />
 ```
 
 ---
 
-## Error Slot
+## Submit Handling
 
-Use the `#error` scoped slot for custom error rendering:
+Use a template `ref` to call `validateAll()` imperatively. It validates every field and surfaces errors, returning `true` if the form is valid.
 
 ```vue
-<AutoForm :schema="schema" :fields="fields" v-model="formData">
+<script setup lang="ts">
+import { ref } from "vue";
+import { AutoForm } from "@moonmangit/vue-autoform";
+
+const formRef = ref<InstanceType<typeof AutoForm> | null>(null);
+const submitResult = ref<boolean | null>(null);
+
+function handleSubmit() {
+  submitResult.value = formRef.value?.validateAll() ?? false;
+
+  if (submitResult.value) {
+    // ✅ form is valid — send to API
+  }
+}
+</script>
+
+<template>
+  <AutoForm
+    ref="formRef"
+    v-model="formData"
+    :schema="schema"
+    :fields="fields"
+    validate-on="submit"
+  />
+  <button @click="handleSubmit">Submit</button>
+  <p v-if="submitResult === true">✓ Submitted!</p>
+  <p v-if="submitResult === false">✗ Fix the errors above</p>
+</template>
+```
+
+---
+
+## Custom Error Rendering
+
+By default, errors are passed as a prop to your field component. You can also override rendering globally using the `#error` scoped slot:
+
+```vue
+<AutoForm v-model="formData" :schema="schema" :fields="fields">
   <template #error="{ fieldKey, error }">
-    <p v-if="error" class="my-error">{{ fieldKey }}: {{ error }}</p>
+    <p v-if="error" class="my-custom-error">
+      ⚠ {{ error }}
+    </p>
   </template>
 </AutoForm>
+```
+
+The slot receives:
+| Slot prop | Type | Description |
+|---|---|---|
+| `fieldKey` | `string` | The schema key of the field |
+| `error` | `string \| undefined` | Current validation error |
+
+---
+
+## Custom Breakpoints
+
+Default breakpoints are Tailwind-compatible. Override per form with the `breakpoints` prop:
+
+| Key   | Default min-width |
+| ----- | ----------------- |
+| `sm`  | 640px             |
+| `md`  | 768px             |
+| `lg`  | 1024px            |
+| `xl`  | 1280px            |
+| `2xl` | 1536px            |
+
+```vue
+<!-- Use a custom "tablet" breakpoint at 900px -->
+<AutoForm
+  v-model="formData"
+  :schema="schema"
+  :fields="fields"
+  :layout="{ default: 1, tablet: 2 }"
+  :breakpoints="{ tablet: 900 }"
+/>
+```
+
+---
+
+## CSS Variables
+
+Control spacing without touching component internals:
+
+```css
+/* In your global CSS or scoped to a wrapper */
+.autoform {
+  --autoform-gap: 1rem; /* column gap between fields  */
+  --autoform-row-gap: 1rem; /* row gap between field rows */
+}
 ```
 
 ---
 
 ## Props Reference
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `schema` | `ZodObject` | required | Zod object schema |
-| `fields` | `Record<string, FieldConfig>` | required | Field component map |
-| `modelValue` | `Record<string, unknown>` | required | Form data (`v-model`) |
-| `layout` | `AutoFormLayout` | undefined | Grid layout config |
-| `validateOn` | `'blur' \| 'input' \| 'submit'` | `'blur'` | Validation trigger |
-| `breakpoints` | `Partial<BreakpointMap>` | Tailwind defaults | Custom breakpoint widths |
+| Prop          | Type                                | Default           | Description                                      |
+| ------------- | ----------------------------------- | ----------------- | ------------------------------------------------ |
+| `schema`      | `ZodObject`                         | **required**      | Zod object schema defining fields and validation |
+| `fields`      | `Record<string, FieldConfig>`       | **required**      | Map of field key → component + props             |
+| `modelValue`  | `Record<string, unknown>`           | **required**      | Form data object, bound with `v-model`           |
+| `layout`      | `ShorthandLayout \| ExplicitLayout` | `undefined`       | Responsive grid layout config                    |
+| `validateOn`  | `'blur' \| 'input' \| 'submit'`     | `'blur'`          | When to run per-field validation                 |
+| `breakpoints` | `Partial<BreakpointMap>`            | Tailwind defaults | Custom breakpoint widths in px                   |
 
----
+### Exposed methods (via template ref)
 
-## CSS Variables
-
-Customise spacing without overriding component styles:
-
-```css
-.autoform {
-  --autoform-gap: 1rem;      /* gap between fields in a row */
-  --autoform-row-gap: 1rem;  /* gap between rows */
-}
-```
+| Method          | Returns                               | Description                                   |
+| --------------- | ------------------------------------- | --------------------------------------------- |
+| `validateAll()` | `boolean`                             | Validates all fields; returns `true` if valid |
+| `errors`        | `Record<string, string \| undefined>` | Reactive map of current field errors          |
 
 ---
 
@@ -222,12 +350,24 @@ Customise spacing without overriding component styles:
 # Install dependencies
 pnpm install
 
-# Run playground (port 5174)
+# Run interactive playground (http://localhost:5174)
 pnpm playground
 
-# Build library
+# Build library for distribution
 pnpm build
 
-# Type check
+# Type-check library source only
 pnpm type-check
+
+# Lint
+pnpm lint
+pnpm lint:fix
 ```
+
+The `playground/` directory contains a full demo app with 5 examples covering every feature. It uses a Vite path alias to import the library source directly — no rebuild needed during development.
+
+---
+
+## License
+
+MIT © [moonmangit](https://github.com/moonmangit)

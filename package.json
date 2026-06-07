@@ -1,6 +1,6 @@
 {
-  "name": "vue-autoform",
-  "version": "0.1.0",
+  "name": "@moonmangit/vue-autoform",
+  "version": "0.1.2",
   "description": "Headless Vue 3 auto-rendering form library with Zod schema validation and responsive grid layout",
   "type": "module",
   "main": "./dist/vue-autoform.cjs.js",
@@ -11,7 +11,8 @@
       "import": "./dist/vue-autoform.es.js",
       "require": "./dist/vue-autoform.cjs.js",
       "types": "./dist/vue-autoform.d.ts"
-    }
+    },
+    "./dist/style.css": "./dist/style.css"
   },
   "files": [
     "dist"
@@ -20,7 +21,7 @@
     "dev": "vite",
     "build": "vite build",
     "playground": "vite --config playground/vite.config.ts",
-    "type-check": "vue-tsc --noEmit",
+    "type-check": "vue-tsc --noEmit --project tsconfig.lib.json",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "prepublishOnly": "pnpm lint && pnpm type-check && pnpm build"
