@@ -21,6 +21,7 @@
     "dev": "vite",
     "build": "vite build",
     "playground": "vite --config playground/vite.config.ts",
+    "playground:prod": "vite --config playground/vite.config.prod.ts",
     "type-check": "vue-tsc --noEmit --project tsconfig.lib.json",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
