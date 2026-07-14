@@ -147,10 +147,39 @@ defineEmits<{ (e: "update:modelValue", v: string): void; (e: "blur"): void }>();
 ### FieldConfig shape
 
 ```ts
+type FieldContext = {
+  fieldKey: string;
+  value: unknown;
+  error: string | undefined;
+};
+
 type FieldConfig = {
   component: Component;
-  // plain object OR a getter function (for reactive/async values)
-  props?: Record<string, unknown> | (() => Record<string, unknown>);
+  props?: Record<string, unknown> | ((ctx: FieldContext) => Record<string, unknown>);
+};
+
+type FieldDefinition = Component | FieldConfig;
+```
+
+`fields` is a map of schema key → `Component` or `FieldConfig`:
+
+```ts
+const fields = {
+  // shorthand — just the component
+  firstName: TextInput,
+
+  // full config with static props
+  email: { component: TextInput, props: { label: "Email", type: "email" } },
+
+  // props as a getter that receives the field context
+  role: {
+    component: SelectInput,
+    props: ({ error }) => ({
+      label: "Role",
+      placeholder: error ? "Fix the error first" : "Select a role",
+      options: roleOptions,
+    }),
+  },
 };
 ```
 
@@ -258,7 +287,7 @@ const layout = {
 
 ### Explicit Layout
 
-Control exactly which fields appear in each row at each breakpoint. Each inner array is a row; each string is a schema key.
+Control exactly which fields appear in each row at each breakpoint. Each inner array is a row; each item is either a schema key string or an object with `key` and optional `colSpan`.
 
 ```ts
 const layout = {
@@ -269,8 +298,11 @@ const layout = {
     ["firstName", "lastName"],
     ["email", "role"],
   ],
-  // Desktop: everything in one row
-  lg: [["firstName", "lastName", "email", "role"]],
+  // Desktop: first three fields in one row, role spans the full width below
+  lg: [
+    ["firstName", "lastName", "email"],
+    [{ key: "role", colSpan: 3 }],
+  ],
 };
 ```
 
@@ -395,7 +427,9 @@ Control spacing without touching component internals:
 
 ## Styling
 
-The library auto-injects base styles (CSS Grid layout, default input styling) when you import the component. No manual CSS import is required.
+`AutoForm` is headless. It auto-injects only the minimal CSS Grid layout styles it needs to position fields; it does **not** style your inputs. No manual CSS import is required.
+
+If you leave a schema key out of `fields`, the library renders a bare `<input class="autoform-default-input">` for that key so the form is still usable. You can style `.autoform-default-input` yourself, or map every key to your own component.
 
 ### Customizing Styles
 
@@ -412,23 +446,21 @@ You have two options:
 **2. Completely custom styling**
 If you want full control over the form's appearance, you can:
 - Write your own field components with custom styles
-- Override the auto-injected styles with higher specificity
+- Override the auto-injected layout styles with higher specificity
 - Use CSS modules or scoped styles in your field components
-
-The library is headless — it only provides the layout grid structure. All field styling is up to you.
 
 ---
 
 ## Props Reference
 
-| Prop          | Type                                | Default           | Description                                      |
-| ------------- | ----------------------------------- | ----------------- | ------------------------------------------------ |
-| `schema`      | `ZodObject`                         | **required**      | Zod object schema defining fields and validation |
-| `fields`      | `Record<string, FieldConfig>`       | **required**      | Map of field key → component + props             |
-| `modelValue`  | `Record<string, unknown>`           | **required**      | Form data object, bound with `v-model`           |
+| Prop          | Type                               | Default           | Description                                      |
+| ------------- | ---------------------------------- | ----------------- | ------------------------------------------------ |
+| `schema`      | `ZodObject`                        | **required**      | Zod object schema defining fields and validation |
+| `fields`      | `Record<string, FieldDefinition>`  | `{}`              | Map of field key → component or FieldConfig      |
+| `modelValue`  | `Record<string, unknown>`          | **required**      | Form data object, bound with `v-model`           |
 | `layout`      | `ShorthandLayout \| ExplicitLayout` | `undefined`       | Responsive grid layout config                    |
-| `validateOn`  | `'blur' \| 'input' \| 'submit'`     | `'blur'`          | When to run per-field validation                 |
-| `breakpoints` | `Partial<BreakpointMap>`            | Tailwind defaults | Custom breakpoint widths in px                   |
+| `validateOn`  | `'blur' \| 'input' \| 'submit'`    | `'blur'`          | When to run per-field validation                 |
+| `breakpoints` | `Partial<BreakpointMap>`           | Tailwind defaults | Custom breakpoint widths in px                   |
 
 ### Exposed methods (via template ref)
 

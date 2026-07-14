@@ -76,7 +76,7 @@
         <h2>Demo 4 — Submit validation</h2>
         <p class="demo-desc">
           Errors only shown on submit. Uses <code>ref</code> to call
-          <code>validate()</code>.
+          <code>validateAll()</code>.
         </p>
         <AutoForm
           ref="submitForm"
@@ -222,6 +222,7 @@ const fieldConfig = {
     component: TextInput,
     props: { label: "First Name", placeholder: "John" },
   },
+
   lastName: {
     component: TextInput,
     props: { label: "Last Name", placeholder: "Doe" },
@@ -277,7 +278,8 @@ const explicitLayout: AutoFormLayout = {
   ],
   lg: [
     ["firstName", "lastName", "email"],
-    ["password", "role", "bio"],
+    [{ key: "password", colSpan: 2 }, "role"],
+    [{ key: "bio", colSpan: 3 }],
   ],
 };
 

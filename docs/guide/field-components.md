@@ -47,10 +47,39 @@ defineEmits<{ (e: "update:modelValue", v: string): void; (e: "blur"): void }>();
 ## FieldConfig Shape
 
 ```ts
+type FieldContext = {
+  fieldKey: string;
+  value: unknown;
+  error: string | undefined;
+};
+
 type FieldConfig = {
   component: Component;
-  // plain object OR a getter function (for reactive/async values)
-  props?: Record<string, unknown> | (() => Record<string, unknown>);
+  props?: Record<string, unknown> | ((ctx: FieldContext) => Record<string, unknown>);
+};
+
+type FieldDefinition = Component | FieldConfig;
+```
+
+`fields` is a map of schema key → `Component` or `FieldConfig`:
+
+```ts
+const fields = {
+  // shorthand — just the component
+  firstName: TextInput,
+
+  // full config with static props
+  email: { component: TextInput, props: { label: "Email", type: "email" } },
+
+  // props as a getter that receives the field context
+  role: {
+    component: SelectInput,
+    props: ({ error }) => ({
+      label: "Role",
+      placeholder: error ? "Fix the error first" : "Select a role",
+      options: roleOptions,
+    }),
+  },
 };
 ```
 
