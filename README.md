@@ -245,6 +245,109 @@ const formData = ref({ name: "", framework: "", tags: [] });
 </template>
 ```
 
+### Complex custom input
+
+Here is a multi-select that emits an array of `{ value, label }` objects. It is useful when the schema expects `z.array(z.object({ ... }))`.
+
+```vue
+<!-- components/MultiSelectInput.vue -->
+<script setup lang="ts">
+type Option = { value: string; label: string };
+
+const props = withDefaults(
+  defineProps<{
+    modelValue?: Option[];
+    error?: string;
+    label?: string;
+    disabled?: boolean;
+    options: Option[];
+  }>(),
+  { modelValue: () => [] },
+);
+
+const emit = defineEmits<{
+  (e: "update:modelValue", value: Option[]): void;
+  (e: "blur"): void;
+}>();
+
+function isSelected(opt: Option): boolean {
+  return (props.modelValue ?? []).some((o) => o.value === opt.value);
+}
+
+function toggle(opt: Option) {
+  const current = props.modelValue ?? [];
+  const exists = current.some((o) => o.value === opt.value);
+  const next = exists
+    ? current.filter((o) => o.value !== opt.value)
+    : [...current, opt];
+  emit("update:modelValue", next);
+  emit("blur");
+}
+</script>
+
+<template>
+  <div class="field-wrapper">
+    <label v-if="label" class="field-label">{{ label }}</label>
+    <div class="multi-select" :class="{ 'multi-select--error': !!error }">
+      <div v-if="!options.length" class="multi-select__empty">
+        No options available
+      </div>
+      <label
+        v-for="opt in options"
+        :key="opt.value"
+        class="multi-select__option"
+        :class="{ 'multi-select__option--checked': isSelected(opt) }"
+      >
+        <input
+          type="checkbox"
+          :value="opt.value"
+          :checked="isSelected(opt)"
+          :disabled="disabled"
+          @change="toggle(opt)"
+        />
+        {{ opt.label }}
+      </label>
+    </div>
+    <span v-if="error" class="field-error">{{ error }}</span>
+  </div>
+</template>
+```
+
+```vue
+<script setup lang="ts">
+import { ref } from "vue";
+import { z } from "zod";
+import { AutoForm } from "@moonmangit/vue-autoform";
+import MultiSelectInput from "./components/MultiSelectInput.vue";
+
+const schema = z.object({
+  tags: z
+    .array(z.object({ value: z.string(), label: z.string() }))
+    .min(1, "Select at least one tag"),
+});
+
+const fields = {
+  tags: {
+    component: MultiSelectInput,
+    props: () => ({
+      label: "Tags",
+      options: [
+        { value: "vue", label: "Vue" },
+        { value: "react", label: "React" },
+        { value: "svelte", label: "Svelte" },
+      ],
+    }),
+  },
+};
+
+const formData = ref({ tags: [] });
+</script>
+
+<template>
+  <AutoForm v-model="formData" :schema="schema" :fields="fields" />
+</template>
+```
+
 **Key points:**
 
 - Your component receives `disabled` and `options` as normal props — the library passes them through unchanged
