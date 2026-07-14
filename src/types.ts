@@ -12,12 +12,30 @@ export const DEFAULT_BREAKPOINTS: BreakpointMap = {
   '2xl': 1536,
 }
 
-export interface FieldConfig {
-  component: Component
-  props?: Record<string, unknown> | (() => Record<string, unknown>)
+export interface FieldContext {
+  fieldKey: string
+  value: unknown
+  error: string | undefined
 }
 
-export type LayoutRow = string[]
+export interface FieldConfig {
+  component: Component
+  props?: Record<string, unknown> | ((ctx: FieldContext) => Record<string, unknown>)
+}
+
+/**
+ * A field can be configured either with a full FieldConfig object or just
+ * a plain component. In the shorthand form the component receives the
+ * standard modelValue / error props and no extra props.
+ */
+export type FieldDefinition = Component | FieldConfig
+
+export interface LayoutItem {
+  key: string
+  colSpan?: number
+}
+
+export type LayoutRow = (string | LayoutItem)[]
 
 export type LayoutGrid = LayoutRow[]
 
@@ -35,9 +53,6 @@ export function isExplicitLayout(layout: AutoFormLayout): layout is ExplicitLayo
   return Array.isArray(layout.default)
 }
 
-export interface FieldRenderInfo {
-  key: string
-  config: FieldConfig | undefined
-  value: unknown
-  error: string | undefined
+export function isFieldConfig(def: FieldDefinition | undefined): def is FieldConfig {
+  return typeof def === 'object' && def !== null && 'component' in def
 }

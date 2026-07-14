@@ -2,14 +2,14 @@
 
 ## AutoForm Props
 
-| Prop          | Type                                | Default           | Description                                      |
-| ------------- | ----------------------------------- | ----------------- | ------------------------------------------------ |
-| `schema`      | `ZodObject`                         | **required**      | Zod object schema defining fields and validation |
-| `fields`      | `Record<string, FieldConfig>`       | **required**      | Map of field key → component + props             |
-| `modelValue`  | `Record<string, unknown>`           | **required**      | Form data object, bound with `v-model`           |
+| Prop          | Type                               | Default           | Description                                      |
+| ------------- | ---------------------------------- | ----------------- | ------------------------------------------------ |
+| `schema`      | `ZodObject`                        | **required**      | Zod object schema defining fields and validation |
+| `fields`      | `Record<string, FieldDefinition>`  | `{}`              | Map of field key → component or FieldConfig      |
+| `modelValue`  | `Record<string, unknown>`          | **required**      | Form data object, bound with `v-model`           |
 | `layout`      | `ShorthandLayout \| ExplicitLayout` | `undefined`       | Responsive grid layout config                    |
-| `validateOn`  | `'blur' \| 'input' \| 'submit'`     | `'blur'`          | When to run per-field validation                 |
-| `breakpoints` | `Partial<BreakpointMap>`            | Tailwind defaults | Custom breakpoint widths in px                   |
+| `validateOn`  | `'blur' \| 'input' \| 'submit'`    | `'blur'`          | When to run per-field validation                 |
+| `breakpoints` | `Partial<BreakpointMap>`           | Tailwind defaults | Custom breakpoint widths in px                   |
 
 ## Exposed Methods (via template ref)
 
@@ -20,13 +20,45 @@
 
 ## Types
 
+### FieldContext
+
+```ts
+type FieldContext = {
+  fieldKey: string;
+  value: unknown;
+  error: string | undefined;
+};
+```
+
 ### FieldConfig
 
 ```ts
 type FieldConfig = {
   component: Component;
-  props?: Record<string, unknown> | (() => Record<string, unknown>);
+  props?: Record<string, unknown> | ((ctx: FieldContext) => Record<string, unknown>);
 };
+```
+
+### FieldDefinition
+
+```ts
+type FieldDefinition = Component | FieldConfig;
+```
+
+### LayoutItem
+
+```ts
+type LayoutItem = {
+  key: string;
+  colSpan?: number;
+};
+```
+
+### LayoutRow / LayoutGrid
+
+```ts
+type LayoutRow = (string | LayoutItem)[];
+type LayoutGrid = LayoutRow[];
 ```
 
 ### ShorthandLayout

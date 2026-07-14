@@ -31,7 +31,7 @@ const layout = {
 
 ## Explicit Layout
 
-Control exactly which fields appear in each row at each breakpoint. Each inner array is a row; each string is a schema key.
+Control exactly which fields appear in each row at each breakpoint. Each inner array is a row; each item is either a schema key string or an object with `key` and optional `colSpan`.
 
 ```ts
 const layout = {
@@ -42,8 +42,11 @@ const layout = {
     ["firstName", "lastName"],
     ["email", "role"],
   ],
-  // Desktop: everything in one row
-  lg: [["firstName", "lastName", "email", "role"]],
+  // Desktop: first three fields in one row, role spans the full width below
+  lg: [
+    ["firstName", "lastName", "email"],
+    [{ key: "role", colSpan: 3 }],
+  ],
 };
 ```
 
